@@ -113,7 +113,6 @@ void lw(long long &tmp1,long long int tmp2,long long int &tmp3
     else if(index==2){
         tmp1=matrix_C[i][j];
     }
-    
     return ;
 }
 
@@ -203,7 +202,7 @@ int main(int argc, char *argv[]) {
                 addu(reg[9],reg[8],reg[26]);
                 lw(reg[10],0,reg[9],i,j,k,2); // c=2
                 //	temp1 = 4(i*p+j) + C[]base
-
+                
                 mul(reg[11],reg[3],reg[22]);
                 addu(reg[12],reg[11],reg[5]);
                 mul(reg[12],reg[12],reg[1]);

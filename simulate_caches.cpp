@@ -7,22 +7,22 @@ static int matrix_A[2048][2048];
 static int matrix_B[2048][2048];
 static int matrix_C[2048][2048];
 
+
 struct cache_content{
 	unsigned int tag;
 };
 
 class cache{
     public:
+        bool flag=false;
         int offset_bit;
         int index_bit;
         int tag_bit;
         int penalty=0;
-        int hit_cnt=0;
+        int hit_cnt=0; // L1
         int miss_cnt=0;
         int hit_penalty;
         int miss_penalty;
-        int hit_prnalty2=0;
-        int miss_penalty2=0;
         long long cache_blocks;
         vector<list<cache_content>> cache_data;
         cache(int cache_size,int block_size);
@@ -60,11 +60,7 @@ void simulate(cache &tmp,long long int addr){
     bool flag=false;
     for(auto it= tmp.cache_data[index].begin() ;it!=tmp.cache_data[index].end() ;it++){
         if(it->tag == tag){
-            if(tmp.miss_penalty2==0)
-                tmp.penalty+=tmp.hit_penalty;
-            else{
-
-            }
+            tmp.penalty+=tmp.hit_penalty;
             tmp.hit_cnt++;
             tmp.cache_data[index].insert(tmp.cache_data[index].begin(),*it);
             it=tmp.cache_data[index].erase(it);
@@ -73,12 +69,14 @@ void simulate(cache &tmp,long long int addr){
         }
     }
     if(!flag){
-        if(tmp.miss_penalty2==0)
-            tmp.penalty+=tmp.miss_penalty;
-        else{
-
-        }
         tmp.miss_cnt++;
+        if(tmp.flag){
+            simulate(cache_c_l2,addr);
+        }
+        else{
+            tmp.penalty+=tmp.miss_penalty;
+        }
+        
         cache_content temp;
         temp.tag=tag;
         reverse(tmp.cache_data[index].begin(),tmp.cache_data[index].end());
@@ -104,6 +102,7 @@ void lw(long long &tmp1,long long int tmp2,long long int &tmp3
     
     simulate(cache_a,tmp3);
     simulate(cache_b,tmp3);
+    simulate(cache_c_l1,tmp3);
     if(index==0){
         tmp1=matrix_A[i][k];
     }
@@ -117,7 +116,10 @@ void lw(long long &tmp1,long long int tmp2,long long int &tmp3
 }
 
 
-void sw(long long tmp1,long long i,long long j){
+void sw(long long tmp1,long long int &addr,long long i,long long j){
+    simulate(cache_a,addr);
+    simulate(cache_b,addr);
+    simulate(cache_c_l1,addr);
     matrix_C[i][j]=tmp1;
     return ;
 }
@@ -125,8 +127,16 @@ void sw(long long tmp1,long long i,long long j){
 int main(int argc, char *argv[]) {
     cin.tie(0), ios::sync_with_stdio(0);
     
-    cache_a.hit_penalty=4;
-    cache_a.miss_penalty=836;
+    cache_a.hit_penalty=1+2+1;
+    cache_a.miss_penalty=(1 + 2 + 8 * (1 + 100 + 1 + 2) + 1);
+
+    cache_b.hit_penalty=(1+2+1);
+    cache_b.miss_penalty=(1 + 2 + 1 + 100 + 1 + 2 + 1);
+
+    cache_c_l1.hit_penalty=1 + 1 + 1;
+    cache_c_l1.flag=true;
+    cache_c_l2.hit_penalty=(1 + 1 + 4 * (1 + 10 + 1 + 1) + 1);
+    cache_c_l2.miss_penalty=(1 + 32 * (1 + 100 + 1 + 10) + 4 * (1 + 10 + 1 + 1) + 1 + 1);
 
     long long clock_cycle=0;
     long long reg[32]={0};
@@ -221,7 +231,7 @@ int main(int argc, char *argv[]) {
                 mul(reg[19],reg[18],reg[14]);
                 //if(i==0 && j==0) cout<<"Reg: "<<dec<<reg[19]<<" "<<reg[10]<<endl;
                 addu(reg[20],reg[10],reg[19]);
-                sw(reg[20],i,j);
+                sw(reg[20],reg[9],i,j);
                 //	C[i][j] = C[i][j] + A[i][k]*B[k][j]
 
                 clock_cycle+=22;
@@ -244,10 +254,11 @@ int main(int argc, char *argv[]) {
         file<<endl;
     }
 
-    file<<clock_cycle<<endl;
-    file<<cache_a.penalty<<endl;
-    file<<cache_b.penalty<<endl;
-    cout<<cache_a.hit_cnt<<" "<<cache_a.miss_cnt;
+    file<<clock_cycle<<" "<<cache_a.penalty<<" "<<cache_b.penalty<<" "<<cache_c_l1.penalty+cache_c_l2.penalty<<endl;
+    cout<<cache_a.hit_cnt<<" "<<cache_a.miss_cnt<<endl;
+    cout<<cache_b.hit_cnt<<" "<<cache_b.miss_cnt<<endl;
+    cout<<cache_c_l1.hit_cnt<<" "<<cache_c_l1.miss_cnt<<endl;
+    cout<<cache_c_l2.hit_cnt<<" "<<cache_c_l2.miss_cnt<<endl;
     file.close();
     //1+8*(1+100+1+2)+2+1=1+8*104+3=4+832=836 
 

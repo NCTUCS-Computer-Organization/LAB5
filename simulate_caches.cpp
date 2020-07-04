@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <fstream>
 using namespace std;
 #define associatively 8
 
@@ -106,7 +107,7 @@ void sw(long long tmp1,long long i,long long j){
     return ;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     cin.tie(0), ios::sync_with_stdio(0);
     
     long long clock_cycle=0;
@@ -118,14 +119,20 @@ int main() {
     cout<<cache_c_l1.line<<endl;
     cout<<cache_c_l2.line<<endl;*/
 
+    string input_file=argv[1];
+    string output_file=argv[2];
+
     memset(matrix_A,0,sizeof(matrix_A));
     memset(matrix_B,0,sizeof(matrix_B));
     memset(matrix_C,0,sizeof(matrix_C));
 
-    cin >> hex >> reg[24] >> reg[25] >> reg[26];
+    fstream file;
+    file.open(input_file,ios::in);
+
+    file >> hex >> reg[24] >> reg[25] >> reg[26];
     // $24 = A[]base, $25 = B[]base, $26 = C[]base
     
-    cin >> dec >> reg[21] >> reg[22] >> reg[23]; 
+    file >> dec >> reg[21] >> reg[22] >> reg[23]; 
     // $21 = m, $22 = n, $23 = p
   
     m=reg[21];
@@ -138,15 +145,17 @@ int main() {
 
     for(int i=0;i<m;i++){
         for(int j=0;j<n;j++){
-            cin>>matrix_A[i][j];
+            file>>matrix_A[i][j];
         }
     }
     
     for(int i=0;i<n;i++){
         for(int j=0;j<p;j++){
-            cin>>matrix_B[i][j];
+            file>>matrix_B[i][j];
         }
     }
+
+    file.close();
 
     // matrix    multiplication
     // addi $3, $0, 0
@@ -201,17 +210,21 @@ int main() {
         clock_cycle+=2;
     }
     
+    
+    file.open(output_file,ios::out);
+
     for(int i=0;i<m;i++){
         for(int j=0;j<p;j++){
-            cout<<dec<<matrix_C[i][j]<<" ";
+            file<<dec<<matrix_C[i][j]<<" ";
         }
-        cout<<endl;
+        file<<endl;
     }
 
-    cout<<clock_cycle<<endl;
-    cout<<cache_a.miss_cnt<<endl;
-    cout<<cache_b.miss_cnt<<endl;
+    file<<clock_cycle<<endl;
+    file<<cache_a.miss_cnt<<endl;
+    file<<cache_b.miss_cnt<<endl;
 
+    file.close();
     // 
 
     return 0;

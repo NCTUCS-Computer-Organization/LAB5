@@ -2,6 +2,10 @@
 using namespace std;
 #define associatively 8
 
+static int matrix_A[2048][2048];
+static int matrix_B[2048][2048];
+static int matrix_C[2048][2048];
+
 struct cache_content{
 	unsigned int tag;
 };
@@ -70,7 +74,7 @@ void addu(long long &tmp1,long long &tmp2,long long &tmp3){
 
 void lw(long long &tmp1,long long int tmp2,long long int tmp3
         ,int i,int j,int k
-        ,int matrix_A[2048][2048],int matrix_B[2048][2048],int matrix_C[2048][2048],int index){
+        ,int index){
     
     if(index==0){
         tmp1=matrix_A[i][k];
@@ -87,12 +91,10 @@ void lw(long long &tmp1,long long int tmp2,long long int tmp3
 }
 
 
-void sw(long long tmp1,long long tmp2,long long tmp3,int matrix_C[2048][2048]){
-    matrix_C[tmp2][tmp3]=tmp1;
+void sw(long long tmp1,long long i,long long j){
+    matrix_C[i][j]=tmp1;
     return ;
 }
-
-
 
 int main() {
     cin.tie(0), ios::sync_with_stdio(0);
@@ -111,11 +113,6 @@ int main() {
     cout<<cache_c_l1.line<<endl;
     cout<<cache_c_l2.line<<endl;*/
 
-
-    static int matrix_A[2048][2048];
-    static int matrix_B[2048][2048];
-    static int matrix_C[2048][2048];
-
     memset(matrix_A,0,sizeof(matrix_A));
     memset(matrix_B,0,sizeof(matrix_B));
     memset(matrix_C,0,sizeof(matrix_C));
@@ -123,7 +120,6 @@ int main() {
     cin >> hex >> reg[24] >> reg[25] >> reg[26];
     // $24 = A[]base, $25 = B[]base, $26 = C[]base
     
-    cout << hex << reg[24] << reg[25] << reg[26] <<endl;
     cin >> reg[21] >> reg[22] >> reg[23]; 
     // $21 = m, $22 = n, $23 = p
   
@@ -134,18 +130,32 @@ int main() {
     reg[1]=4 ;  // $1 = const 4
     ++clock_cycle;
 
-    for(int i=0;i<m;++i){
-        for(int j=0;j<n;++j){
+    for(int i=0;i<m;i++){
+        for(int j=0;j<n;j++){
             cin>>matrix_A[i][j];
         }
     }
     
-    for(int i=0;i<n;++i){
-        for(int j=0;j<p;++j){
+    for(int i=0;i<n;i++){
+        for(int j=0;j<p;j++){
             cin>>matrix_B[i][j];
         }
     }
 
+    cout<<endl;
+    for(int i=0;i<m;i++){
+        for(int j=0;j<n;j++){
+            cout<<matrix_A[i][j]<<" ";
+        }
+        cout<<endl;
+    }
+
+    for(int i=0;i<n;i++){
+        for(int j=0;j<p;j++){
+            cout<<matrix_B[i][j]<<" ";
+        }
+        cout<<endl;
+    }
 
     // matrix    multiplication
 
@@ -161,37 +171,39 @@ int main() {
         clock_cycle+=2; 
         // slt $6, $3, $21  beq $6, $0, exit
 
-        for(int j=0;j<n;++j){
+        for(int j=0;j<p;++j){
             clock_cycle+=2;
             // slt $6, $4, $23  beq $6, $0, end_j
 
-            for(int k=0;k<p;++k){
+            for(int k=0;k<n;++k){
                 clock_cycle+=2; 
 
                 mul(reg[7],reg[3],reg[23]);
                 addu(reg[8],reg[7],reg[4]);
                 mul(reg[8],reg[8],reg[1]);
                 addu(reg[9],reg[8],reg[26]);
-                lw(reg[10],0,reg[9],i,j,k,matrix_A,matrix_B,matrix_C,2); // c=2
+                lw(reg[10],0,reg[9],i,j,k,2); // c=2
                 //	temp1 = 4(i*p+j) + C[]base
 
                 mul(reg[11],reg[3],reg[22]);
                 addu(reg[12],reg[11],reg[5]);
                 mul(reg[12],reg[12],reg[1]);
                 addu(reg[13],reg[12],reg[24]);
-                lw(reg[14],0,reg[13],i,j,k,matrix_A,matrix_B,matrix_C,0); // a=0
+                lw(reg[14],0,reg[13],i,j,k,0); // a=0
                 //	temp2 = 4(i*n+k) + A[]base
                 
                 mul(reg[15],reg[5],reg[23]);
                 addu(reg[16],reg[15],reg[4]);
                 mul(reg[16],reg[16],reg[1]);
                 addu(reg[17],reg[16],reg[25]);
-                lw(reg[18],0,reg[17],i,j,k,matrix_A,matrix_B,matrix_C,1); // b=1
+                lw(reg[18],0,reg[17],i,j,k,1); // b=1
                 //	temp3 = 4(k*p+j) + B[]base
                 
+                if(i==0 && j==0) cout<<reg[18]<<" "<<reg[14]<<endl;
                 mul(reg[19],reg[18],reg[14]);
+                if(i==0 && j==0) cout<<"Reg: "<<dec<<reg[19]<<" "<<reg[10]<<endl;
                 addu(reg[20],reg[10],reg[19]);
-                sw(reg[20],i,j,matrix_C);
+                sw(reg[20],i,j);
                 //	C[i][j] = C[i][j] + A[i][k]*B[k][j]
 
                 clock_cycle+=18;
@@ -202,13 +214,13 @@ int main() {
         clock_cycle+=2;
     }
     
-    for(int i=0;i<n;i++){
-        for(int j=0;j<m;j++){
-            cout<<matrix_C[i][j];
+    for(int i=0;i<m;i++){
+        for(int j=0;j<p;j++){
+            cout<<dec<<matrix_C[i][j]<<" ";
         }
         cout<<endl;
     }
-
+    cout<<clock_cycle<<endl;
 
     // 
 

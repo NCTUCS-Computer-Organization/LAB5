@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
     memset(matrix_B,0,sizeof(matrix_B));
     memset(matrix_C,0,sizeof(matrix_C));
 
+
     fstream file;
     file.open(input_file,ios::in);
 
@@ -154,18 +155,18 @@ int main(int argc, char *argv[]) {
             file>>matrix_B[i][j];
         }
     }
-
     file.close();
 
     // matrix    multiplication
     // addi $3, $0, 0
 
     ++clock_cycle;
+    ++clock_cycle;
 
     for(int i=0;i<m;++i){
         clock_cycle+=3; 
         // slt $6, $3, $21  beq $6, $0, exit
-        //addi $4, $0, 0
+        // addi $4, $0, 0
 
         for(int j=0;j<p;++j){
             //addi $5, $0, 0
@@ -173,7 +174,6 @@ int main(int argc, char *argv[]) {
             // slt $6, $4, $23  beq $6, $0, end_j
 
             for(int k=0;k<n;++k){
-                clock_cycle+=2; 
 
                 mul(reg[7],reg[3],reg[23]);
                 addu(reg[8],reg[7],reg[4]);
@@ -203,12 +203,15 @@ int main(int argc, char *argv[]) {
                 sw(reg[20],i,j);
                 //	C[i][j] = C[i][j] + A[i][k]*B[k][j]
 
-                clock_cycle+=19;
+                clock_cycle+=22;
             }
+            clock_cycle+=2;
             clock_cycle+=2;
         }
         clock_cycle+=2;
+        clock_cycle+=2;
     }
+    clock_cycle+=2;
     
     
     file.open(output_file,ios::out);

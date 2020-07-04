@@ -16,7 +16,13 @@ class cache{
         int offset_bit;
         int index_bit;
         int tag_bit;
+        int penalty=0;
+        int hit_cnt=0;
         int miss_cnt=0;
+        int hit_penalty;
+        int miss_penalty;
+        int hit_prnalty2=0;
+        int miss_penalty2=0;
         long long cache_blocks;
         vector<list<cache_content>> cache_data;
         cache(int cache_size,int block_size);
@@ -35,7 +41,6 @@ cache cache_a(pow(2,9),32);
 cache cache_b(pow(2,9),32);
 cache cache_c_l1(pow(2,7),16);
 cache cache_c_l2(pow(2,12),128);
-int miss_cnt=0;
 const int K = 1024;
 
 double log2(double n){  
@@ -55,6 +60,12 @@ void simulate(cache &tmp,long long int addr){
     bool flag=false;
     for(auto it= tmp.cache_data[index].begin() ;it!=tmp.cache_data[index].end() ;it++){
         if(it->tag == tag){
+            if(tmp.miss_penalty2==0)
+                tmp.penalty+=tmp.hit_penalty;
+            else{
+
+            }
+            tmp.hit_cnt++;
             tmp.cache_data[index].insert(tmp.cache_data[index].begin(),*it);
             it=tmp.cache_data[index].erase(it);
             flag=true;
@@ -62,7 +73,12 @@ void simulate(cache &tmp,long long int addr){
         }
     }
     if(!flag){
-        ++tmp.miss_cnt;
+        if(tmp.miss_penalty2==0)
+            tmp.penalty+=tmp.miss_penalty;
+        else{
+
+        }
+        tmp.miss_cnt++;
         cache_content temp;
         temp.tag=tag;
         reverse(tmp.cache_data[index].begin(),tmp.cache_data[index].end());
@@ -110,6 +126,9 @@ void sw(long long tmp1,long long i,long long j){
 int main(int argc, char *argv[]) {
     cin.tie(0), ios::sync_with_stdio(0);
     
+    cache_a.hit_penalty=4;
+    cache_a.miss_penalty=836;
+
     long long clock_cycle=0;
     long long reg[32]={0};
     int n,m,p;
@@ -175,6 +194,9 @@ int main(int argc, char *argv[]) {
 
             for(int k=0;k<n;++k){
 
+                reg[3]=i;
+                reg[4]=j;
+                reg[5]=k;
                 mul(reg[7],reg[3],reg[23]);
                 addu(reg[8],reg[7],reg[4]);
                 mul(reg[8],reg[8],reg[1]);
@@ -188,14 +210,14 @@ int main(int argc, char *argv[]) {
                 addu(reg[13],reg[12],reg[24]);
                 lw(reg[14],0,reg[13],i,j,k,0); // a=0
                 //	temp2 = 4(i*n+k) + A[]base
-                
+
                 mul(reg[15],reg[5],reg[23]);
                 addu(reg[16],reg[15],reg[4]);
                 mul(reg[16],reg[16],reg[1]);
                 addu(reg[17],reg[16],reg[25]);
                 lw(reg[18],0,reg[17],i,j,k,1); // b=1
                 //	temp3 = 4(k*p+j) + B[]base
-                
+
                 //if(i==0 && j==0) cout<<reg[18]<<" "<<reg[14]<<endl;
                 mul(reg[19],reg[18],reg[14]);
                 //if(i==0 && j==0) cout<<"Reg: "<<dec<<reg[19]<<" "<<reg[10]<<endl;
@@ -224,11 +246,11 @@ int main(int argc, char *argv[]) {
     }
 
     file<<clock_cycle<<endl;
-    file<<cache_a.miss_cnt<<endl;
-    file<<cache_b.miss_cnt<<endl;
-
+    file<<cache_a.penalty<<endl;
+    file<<cache_b.penalty<<endl;
+    cout<<cache_a.hit_cnt<<" "<<cache_a.miss_cnt;
     file.close();
-    // 
+    //1+8*(1+100+1+2)+2+1=1+8*104+3=4+832=836 
 
     return 0;
 }

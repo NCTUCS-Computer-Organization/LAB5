@@ -188,8 +188,7 @@ int main(int argc, char *argv[]) {
     // matrix    multiplication
     // addi $3, $0, 0
 
-    ++clock_cycle;
-    ++clock_cycle;
+    ++clock_cycle; //addi $3, $0, 0
 
     for(int i=0;i<m;++i){
         clock_cycle+=3; 
@@ -243,6 +242,8 @@ int main(int argc, char *argv[]) {
         clock_cycle+=2;
     }
     clock_cycle+=2;
+    ++clock_cycle; //exit
+
     
     
     file.open(output_file,ios::out);
@@ -255,10 +256,10 @@ int main(int argc, char *argv[]) {
     }
 
     file<<clock_cycle<<" "<<cache_a.penalty<<" "<<cache_b.penalty<<" "<<cache_c_l1.penalty+cache_c_l2.penalty<<endl;
-    cout<<cache_a.hit_cnt<<" "<<cache_a.miss_cnt<<endl;
+    /*cout<<cache_a.hit_cnt<<" "<<cache_a.miss_cnt<<endl;
     cout<<cache_b.hit_cnt<<" "<<cache_b.miss_cnt<<endl;
     cout<<cache_c_l1.hit_cnt<<" "<<cache_c_l1.miss_cnt<<endl;
-    cout<<cache_c_l2.hit_cnt<<" "<<cache_c_l2.miss_cnt<<endl;
+    cout<<cache_c_l2.hit_cnt<<" "<<cache_c_l2.miss_cnt<<endl;*/
     file.close();
     //1+8*(1+100+1+2)+2+1=1+8*104+3=4+832=836 
 
